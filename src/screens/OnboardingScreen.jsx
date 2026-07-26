@@ -31,7 +31,7 @@ export default function OnboardingScreen({ navigation }) {
       swiperRef.current.scrollBy(1);
     } else {
       // 2nd slide-la iruntha, Login screen-ku navigate pannu
-      navigation.navigate("Home");
+      navigation.navigate("Login");
     }
   };
 
@@ -90,8 +90,8 @@ export default function OnboardingScreen({ navigation }) {
                   {
                     color: "#2E7D32",
                     // மொழிக்கு தகுந்தாற்போல் அளவுகளை Normalize செய்கிறோம்
-                    fontSize: isTamil ? normalize(24) : normalize(40),
-                    lineHeight: isTamil ? normalize(35) : normalize(52),
+                    fontSize: isTamil ? normalize(24) : normalize(36),
+                    lineHeight: isTamil ? normalize(35) : normalize(42),
                   },
                 ]}
               >
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   textContainer2: {
     flex: 1,
-    paddingHorizontal: normalize(12),
+    paddingHorizontal: normalize(5),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -203,10 +203,11 @@ const styles = StyleSheet.create({
     lineHeight: normalize(20),
   },
   greenBox: {
-    padding: normalize(20),
+    padding: normalize(25),
     borderRadius: normalize(16),
     width: "100%",
     marginTop: normalize(10),
+    paddingHorizontal: normalize(50) 
   },
   greenBoxTamil: {
     padding: normalize(40),

@@ -14,8 +14,10 @@ import { useTranslation } from "react-i18next";
 // --- Redux Imports ---
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, updateQuantity } from "../store/cartSlice";
-
 import { products } from "../data/data";
+
+// Responsive Helper
+import { normalize } from "../utils/responsive";
 
 // --- மொழிபெயர்ப்புகள் ---
 const TRANSLATIONS = {
@@ -24,7 +26,11 @@ const TRANSLATIONS = {
     add: "ADD",
     aiInfo: "AI Nutritional Info",
   },
-  ta: { title: "இன்றைய புதிய வரவுகள்", add: "சேர்", aiInfo: "AI ஊட்டச்சத்து" },
+  ta: { 
+    title: "இன்றைய புதிய வரவுகள்", 
+    add: "சேர்", 
+    aiInfo: "AI ஊட்டச்சத்து" 
+  },
 };
 
 // --- Single Product Card Component ---
@@ -104,8 +110,11 @@ const FreshProductCard = ({ product, t, lang }) => {
         />
       </TouchableOpacity>
 
-      {/* Product Name */}
-      <Text style={styles.productName} numberOfLines={1}>
+      {/* Product Name - தமிழுக்கு ஏற்ப font size மாறுபடும் */}
+      <Text 
+        style={[styles.productName, { fontSize: lang === "ta" ? normalize(16) : normalize(18) }]} 
+        numberOfLines={1}
+      >
         {productName}
       </Text>
 
@@ -122,8 +131,11 @@ const FreshProductCard = ({ product, t, lang }) => {
             style={styles.addBtnOutline}
             onPress={handleAdd}
             activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.addBtnText}>{t.add}</Text>
+            <Text style={[styles.addBtnText, { fontSize: lang === "ta" ? normalize(14) : normalize(16) }]}>
+              {t.add}
+            </Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.qtyContainer}>
@@ -131,8 +143,9 @@ const FreshProductCard = ({ product, t, lang }) => {
               style={styles.qtyBtn}
               onPress={handleDecrement}
               activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="remove" size={16} color="#FFF" />
+              <Ionicons name="remove" size={normalize(16)} color="#FFF" />
             </TouchableOpacity>
 
             <Text style={styles.qtyText}>{cartQuantity}</Text>
@@ -141,8 +154,9 @@ const FreshProductCard = ({ product, t, lang }) => {
               style={styles.qtyBtn}
               onPress={handleIncrement}
               activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="add" size={16} color="#FFF" />
+              <Ionicons name="add" size={normalize(16)} color="#FFF" />
             </TouchableOpacity>
           </View>
         )}
@@ -154,13 +168,15 @@ const FreshProductCard = ({ product, t, lang }) => {
         activeOpacity={0.7}
         onPress={handleAiInfoClick}
       >
-        <MaterialCommunityIcons name="magic-staff" size={14} color="#058A46" />
-        <Text style={styles.aiBannerText}>{t.aiInfo}</Text>
+        <MaterialCommunityIcons name="magic-staff" size={normalize(14)} color="#058A46" />
+        <Text style={[styles.aiBannerText, { fontSize: lang === "ta" ? normalize(10) : normalize(11) }]}>
+          {t.aiInfo}
+        </Text>
         <Ionicons
           name="chevron-forward"
-          size={12}
+          size={normalize(12)}
           color="#058A46"
-          style={{ marginLeft: 2 }}
+          style={{ marginLeft: normalize(2) }}
         />
       </TouchableOpacity>
     </View>
@@ -177,7 +193,6 @@ export default function FreshThisMorning() {
 
   useEffect(() => {
     if (products && products.length > 0) {
-      // 1. Fruits மற்றும் Vegetables Category-ஐ மட்டும் Filter செய்கிறோம்
       const filtered = products.filter(
         (p) =>
           p.categoryId === "cat_fruits" ||
@@ -186,7 +201,6 @@ export default function FreshThisMorning() {
           p.category === "vegetables",
       );
 
-      // 2. Shuffle செய்து முதல் 5 Items-ஐ எடுக்கிறோம்
       const shuffled = [...filtered].sort(() => 0.5 - Math.random());
       setRandomProducts(shuffled.slice(0, 5));
     }
@@ -196,7 +210,9 @@ export default function FreshThisMorning() {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.sectionTitle, lang === "ta" && { fontSize: 16 }]}>
+      <Text 
+        style={[styles.sectionTitle, { fontSize: lang === "ta" ? normalize(20) : normalize(24) }]}
+      >
         {t.title}
       </Text>
 
@@ -213,7 +229,6 @@ export default function FreshThisMorning() {
             lang={lang}
           />
         ))}
-       
       </ScrollView>
     </View>
   );
@@ -221,101 +236,99 @@ export default function FreshThisMorning() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: normalize(24),
+    marginBottom: normalize(16),
   },
   sectionTitle: {
-    fontSize: 18,
     fontWeight: "bold",
     color: "#111827",
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: normalize(16),
+    marginBottom: normalize(16),
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    gap: 16,
+    paddingHorizontal: normalize(16),
+    gap: normalize(16),
   },
 
   // --- Card Styles ---
   card: {
-    width: 170,
+    width: normalize(220), // Responsive width
     backgroundColor: "#FFF",
-    borderRadius: 12,
+    borderRadius: normalize(12),
     borderWidth: 1,
     borderColor: "#F3F4F6",
     position: "relative",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: normalize(4),
     elevation: 2,
-    marginRight: 16,
+    marginRight: normalize(16),
   },
 
   // Discount Ribbon
   discountRibbon: {
     position: "absolute",
     top: 0,
-    right: 12,
+    right: normalize(12),
     backgroundColor: "#FF3B30",
-    paddingHorizontal: 6,
-    paddingVertical: 6,
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
+    paddingHorizontal: normalize(6),
+    paddingVertical: normalize(6),
+    borderBottomLeftRadius: normalize(4),
+    borderBottomRightRadius: normalize(4),
     zIndex: 10,
   },
   discountText: {
     color: "#FFF",
-    fontSize: 10,
+    fontSize: normalize(12),
     fontWeight: "bold",
     textAlign: "center",
-    lineHeight: 12,
+    lineHeight: normalize(14),
   },
 
   // Image Area
   imageContainer: {
     width: "100%",
-    height: 120,
-    marginTop: 20,
+    height: normalize(140), // Adjusted height
+    marginTop: normalize(20),
     justifyContent: "center",
     alignItems: "center",
   },
   image: {
-    width: "80%",
+    width: "90%", // Reduced image size slightly to fit nicely
     height: "80%",
   },
 
   // Details Area
   productName: {
-    fontSize: 14,
     fontWeight: "700",
     color: "#111827",
     textAlign: "center",
-    marginTop: 12,
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    marginTop: normalize(12),
+    marginBottom: normalize(16),
+    paddingHorizontal: normalize(8),
   },
   priceAddRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 12,
-    marginBottom: 16,
+    paddingHorizontal: normalize(12),
+    marginBottom: normalize(16),
   },
   priceCol: {
     flexDirection: "row",
     alignItems: "baseline",
   },
   price: {
-    fontSize: 18,
+    fontSize: normalize(20),
     fontWeight: "bold",
     color: "#111827",
   },
   mrp: {
-    fontSize: 12,
+    fontSize: normalize(14),
     color: "#9CA3AF",
     textDecorationLine: "line-through",
-    marginLeft: 4,
+    marginLeft: normalize(4),
   },
 
   // Add & Qty Buttons
@@ -323,33 +336,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderWidth: 1.5,
     borderColor: "#058A46",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    borderRadius: normalize(8),
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(6),
   },
   addBtnText: {
     color: "#058A46",
     fontWeight: "bold",
-    fontSize: 13,
   },
   qtyContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#058A46",
-    borderRadius: 8,
-    height: 32,
-    paddingHorizontal: 4,
+    borderRadius: normalize(8),
+    height: normalize(32),
+    paddingHorizontal: normalize(4),
   },
   qtyBtn: {
-    paddingHorizontal: 8,
+    paddingHorizontal: normalize(8),
     height: "100%",
     justifyContent: "center",
   },
   qtyText: {
     color: "#FFF",
     fontWeight: "bold",
-    fontSize: 13,
-    minWidth: 16,
+    fontSize: normalize(13),
+    minWidth: normalize(16),
     textAlign: "center",
   },
 
@@ -359,16 +371,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F0FDF4",
-    paddingVertical: 10,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    paddingVertical: normalize(10),
+    borderBottomLeftRadius: normalize(12),
+    borderBottomRightRadius: normalize(12),
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
   },
   aiBannerText: {
     color: "#058A46",
-    fontSize: 11,
     fontWeight: "600",
-    marginLeft: 4,
+    marginLeft: normalize(4),
   },
 });

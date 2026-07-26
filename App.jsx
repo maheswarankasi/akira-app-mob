@@ -26,6 +26,7 @@ import { setCart } from "./src/store/cartSlice"; // <-- இது மிஸ்�
 import AsyncStorage from "@react-native-async-storage/async-storage"; // <-- இதுவும் மிஸ்ஸிங்
 import AllCategoriesScreen from "./src/screens/AllCategoriesScreen";
 import MainTabNavigator from "./src/navigations/MainTabNavigator";
+import ManageAddressesScreen from "./src/screens/ManageAddressesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -126,6 +127,11 @@ function MainApp() {
               component={CartScreen}
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="ManageAddressesScreen"
+              component={ManageAddressesScreen}
+              options={{ headerShown: false }}
+            />
           </>
         ) : (
           <>
@@ -147,6 +153,11 @@ function MainApp() {
             <Stack.Screen
               name="CartScreen"
               component={CartScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ManageAddressesScreen"
+              component={ManageAddressesScreen}
               options={{ headerShown: false }}
             />
           </>

@@ -2,36 +2,49 @@ import React, { useState, useEffect } from "react";
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+// Responsive மற்றும் i18n-ஐ import செய்கிறோம்
+import { useTranslation } from "react-i18next";
+import { normalize } from "../utils/responsive";
+
 export default function GlobalSearchBox({
   onSearch,
-  placeholder = "Search...",
+  // Parent Component-ல் இருந்து t('search') என அனுப்புவது சிறந்தது
+  placeholder = "Search...", 
 }) {
   const [searchText, setSearchText] = useState("");
+  
+  // தற்போதைய மொழியைக் கண்டறிகிறோம்
+  const { i18n } = useTranslation();
+  const lang = i18n.language?.includes("ta") ? "ta" : "en";
 
   // Debounce Logic
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      // 500ms கழித்து, Parent Component-க்கு (PureNatural/NutriKitchen) டேட்டாவை அனுப்புகிறோம்
+      // 500ms கழித்து, Parent Component-க்கு டேட்டாவை அனுப்புகிறோம்
       if (onSearch) {
         onSearch(searchText);
       }
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchText]); // searchText மாறும்போதெல்லாம் இந்த Effect ரன் ஆகும்
+  }, [searchText, onSearch]); 
 
   return (
     <View style={styles.searchSection}>
       <View style={styles.searchBar}>
         <Ionicons
           name="search-outline"
-          size={20}
+          size={normalize(20)}
           color="#6B7280"
           style={styles.searchIcon}
         />
 
         <TextInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            // தமிழுக்கு ஏற்ப Font Size-ஐ டைனமிக் ஆக மாற்றுகிறோம்
+            { fontSize: lang === "ta" ? normalize(13) : normalize(15) }
+          ]}
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={searchText}
@@ -42,14 +55,18 @@ export default function GlobalSearchBox({
         {searchText.length > 0 && (
           <TouchableOpacity
             onPress={() => setSearchText("")}
-            style={{ marginRight: 8 }}
+            style={{ marginRight: normalize(8) }}
+            hitSlop={{ top: normalize(10), bottom: normalize(10), left: normalize(10), right: normalize(10) }}
           >
-            <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+            <Ionicons name="close-circle" size={normalize(20)} color="#9CA3AF" />
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.micIconWrapper}>
-          <Ionicons name="mic-outline" size={24} color="#EF4444" />
+        <TouchableOpacity 
+          style={styles.micIconWrapper}
+          hitSlop={{ top: normalize(10), bottom: normalize(10), left: normalize(10), right: normalize(10) }}
+        >
+          <Ionicons name="mic-outline" size={normalize(24)} color="#EF4444" />
         </TouchableOpacity>
       </View>
     </View>
@@ -58,30 +75,37 @@ export default function GlobalSearchBox({
 
 const styles = StyleSheet.create({
   searchSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 16, // Parent-ன் நிறத்தை எடுத்துக்கொள்ளும்
-    paddingTop: 16,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(16), 
+    paddingTop: normalize(16),
     zIndex: 10
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 50,
+    borderRadius: normalize(12),
+    paddingHorizontal: normalize(12),
+    height: normalize(50),
+    
+    // (Optional) லேசான ஷேடோ கொடுத்தால் Search Bar இன்னும் அழகாகத் தெரியும்
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: normalize(2) },
+    shadowOpacity: 0.05,
+    shadowRadius: normalize(4),
+    elevation: 2, 
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: normalize(8),
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
     color: "#111827",
   },
   micIconWrapper: {
-    paddingLeft: 8,
+    paddingLeft: normalize(10),
     borderLeftWidth: 1,
     borderLeftColor: "#F3F4F6",
+    marginLeft: normalize(2),
   },
 });

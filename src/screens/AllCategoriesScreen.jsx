@@ -18,6 +18,7 @@ import { products } from "../data/data";
 import { addToCart, updateQuantity } from "../store/cartSlice";
 import GlobalCartBanner from "../components/GlobalCartBanner";
 import { normalize } from "../utils/responsive";
+import ProductCard from "../components/ProductCard";
 
 // --- Single Product Card Component (Right Side) ---
 const CategoryProductCard = ({ product, lang, t }) => {
@@ -283,7 +284,8 @@ export default function AllCategoriesScreen() {
             contentContainerStyle={styles.productsGrid}
             columnWrapperStyle={styles.rowWrapper}
             renderItem={({ item }) => (
-              <CategoryProductCard product={item} lang={lang} />
+              // <CategoryProductCard product={item} lang={lang} />
+              <ProductCard product={item} />
             )}
           />
         </View>
@@ -303,7 +305,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: normalize(16),
-    paddingTop: Platform.OS === 'ios' ? normalize(10) : normalize(30),
+    paddingTop: Platform.OS === 'ios' ? normalize(10) : normalize(20),
     paddingBottom: normalize(12),
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',

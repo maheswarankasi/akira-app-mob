@@ -71,7 +71,7 @@ export default function PureNaturalContent() {
   // --- Dynamic Styles ---
   const dynamicStyles = {
     cardTitle: {
-      fontSize: normalize(isTa ? 10 : 10), // தமிழுக்கு ஏற்ற அளவு
+      fontSize: normalize(isTa ? 10 : 12), // தமிழுக்கு ஏற்ற அளவு
       lineHeight: normalize(isTa ? 16 : 14), // தமிழுக்கு அதிக இடைவெளி
     },
     featureText: {
@@ -261,8 +261,8 @@ const styles = StyleSheet.create({
     height: normalize(32),
   },
   cardImage: {
-    width: "90%",
-    height: "45%",
+    width: "100%",
+    height: "50%",
     borderRadius: normalize(50),
   },
   arrowContainer: {

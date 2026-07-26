@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import { normalize } from '../utils/responsive'; // Responsive helper
 
 // --- TIME SLOTS DATA ---
 const SCHEDULE_SLOTS = [
@@ -39,50 +41,57 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
 
-  // அடுத்த 7 நாட்களை உருவாக்கும் லாஜிக்
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.includes('ta') ? 'ta' : 'en';
+
+  // அடுத்த 7 நாட்களை உருவாக்கும் லாஜிக் (மொழியோடு இணைந்து)
   useEffect(() => {
     if (visible) {
       const dates = [];
       const today = new Date();
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const monthNamesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      const dayNamesTa = ['ஞாயிறு', 'திங்கள்', 'செவ்வாய்', 'புதன்', 'வியாழன்', 'வெள்ளி', 'சனி'];
+      const monthNamesTa = ['ஜன', 'பிப்', 'மார்', 'ஏப்', 'மே', 'ஜூன்', 'ஜூலை', 'ஆக', 'செப்', 'அக்', 'நவ', 'டிச'];
+
+      const dayNames = lang === 'ta' ? dayNamesTa : dayNamesEn;
+      const monthNames = lang === 'ta' ? monthNamesTa : monthNamesEn;
 
       for (let i = 0; i < 7; i++) {
         const nextDate = new Date();
         nextDate.setDate(today.getDate() + i);
         
         let dayLabel = dayNames[nextDate.getDay()];
-        if (i === 0) dayLabel = 'Today';
-        else if (i === 1) dayLabel = 'Tomorrow';
+        if (i === 0) dayLabel = t('today');
+        else if (i === 1) dayLabel = t('tomorrow');
 
         dates.push({
           id: i,
           dayLabel,
-          // தேதியை "24-Jul" என்ற வடிவத்தில் மாற்றுகிறோம்
+          // தேதியை "24-Jul" அல்லது "24-ஜூலை" என்ற வடிவத்தில் மாற்றுகிறோம்
           dateString: `${nextDate.getDate()}-${monthNames[nextDate.getMonth()]}`,
           fullDate: nextDate.toISOString()
         });
       }
       setScheduleDates(dates);
-      // Modal ஓபன் ஆகும்போது பழைய செலக்சனை ரீசெட் செய்ய
       setSelectedDateIndex(0);
       setSelectedTimeSlot(null);
     }
-  }, [visible]);
+  }, [visible, lang, t]); // மொழி மாறினாலும் அப்டேட் ஆகும்
 
   // --- Schedule Time Logic ---
   const currentHour = new Date().getHours();
   
   const isSlotEnabled = (startHour) => {
-    // நாளை, மறுநாள் என்றால் எல்லா நேரமும் Enable ஆகும்
     if (selectedDateIndex !== 0) return true; 
-    // இன்று என்றால்: தற்போதைய நேரத்தை விட குறைந்தபட்சம் 1 மணிநேரம் தள்ளி இருக்க வேண்டும்
     return startHour > currentHour + 1;
   };
 
   const handleConfirmSchedule = async () => {
     if (!selectedTimeSlot) {
-      Alert.alert("Action Required", "Please select a preferred time slot.");
+      Alert.alert(t('action_required'), t('select_time_slot'));
       return;
     }
     
@@ -91,20 +100,15 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
     const scheduleData = {
       date: {
         ...selectedDateObj,
-        // Cart Screen-ல் "Tomorrow" என்று காட்டாமல் "24-Jul" என்றே காட்ட இதை மாற்றுகிறோம்
         dayLabel: selectedDateObj.dateString 
       },
       time: selectedTimeSlot
     };
     
     try {
-      // Local Storage-ல் சேமிக்கிறோம்
       await AsyncStorage.setItem('deliverySchedule', JSON.stringify(scheduleData));
-      
-      // வெற்றிகரமாக சேமிக்கப்பட்டால், Parent Component-க்கு தகவல் அனுப்புகிறோம்
       if (onSuccess) onSuccess(scheduleData);
-      
-      onClose(); // Modal-ஐ மூட
+      onClose(); 
     } catch (e) {
       console.log("Error saving schedule: ", e);
     }
@@ -127,12 +131,20 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
               ]}
               onPress={() => enabled && setSelectedTimeSlot(slot)}
               disabled={!enabled}
+              activeOpacity={0.7}
             >
-              <Text style={[
-                styles.slotText,
-                selected && styles.slotTextSelected,
-                !enabled && styles.slotTextDisabled
-              ]}>{slot.label}</Text>
+              <Text 
+                style={[
+                  styles.slotText,
+                  { fontSize: lang === 'ta' ? normalize(10) : normalize(11) }, // தமிழுக்கு ஏற்ப font size
+                  selected && styles.slotTextSelected,
+                  !enabled && styles.slotTextDisabled
+                ]}
+                numberOfLines={1}
+              >
+                {/* நேரத்தை அப்படியே காண்பிக்கிறோம், தேவைப்பட்டால் AM/PM-ஐ t('am') மூலம் மாற்றலாம் */}
+                {slot.label}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -151,9 +163,17 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
         <View style={styles.modalContent}>
           
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Schedule your order</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={20} color="#FFF" />
+            <Text 
+              style={[styles.modalTitle, { fontSize: lang === 'ta' ? normalize(16) : normalize(18) }]}
+            >
+              {t('schedule_title')}
+            </Text>
+            <TouchableOpacity 
+              onPress={onClose} 
+              style={styles.closeBtn}
+              hitSlop={{ top: normalize(10), bottom: normalize(10), left: normalize(10), right: normalize(10) }}
+            >
+              <Ionicons name="close" size={normalize(20)} color="#FFF" />
             </TouchableOpacity>
           </View>
 
@@ -170,9 +190,26 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
                       setSelectedDateIndex(index);
                       setSelectedTimeSlot(null); 
                     }}
+                    activeOpacity={0.7}
                   >
-                    <Text style={[styles.dateLabel, isSelected && styles.dateTextSelected]}>{d.dayLabel}</Text>
-                    <Text style={[styles.dateValue, isSelected && styles.dateTextSelected]}>{d.dateString}</Text>
+                    <Text 
+                      style={[
+                        styles.dateLabel, 
+                        { fontSize: lang === 'ta' ? normalize(10) : normalize(12) },
+                        isSelected && styles.dateTextSelected
+                      ]}
+                    >
+                      {d.dayLabel}
+                    </Text>
+                    <Text 
+                      style={[
+                        styles.dateValue, 
+                        { fontSize: lang === 'ta' ? normalize(12) : normalize(14) },
+                        isSelected && styles.dateTextSelected
+                      ]}
+                    >
+                      {d.dateString}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -181,21 +218,31 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
 
           {/* Time Slots */}
           <ScrollView style={styles.timeSlotsScroll} showsVerticalScrollIndicator={false}>
-            <Text style={styles.periodHeading}>MORNING</Text>
+            <Text style={[styles.periodHeading, { fontSize: lang === 'ta' ? normalize(10) : normalize(12) }]}>
+              {t('morning')}
+            </Text>
             {renderTimeSlots('MORNING')}
 
-            <Text style={styles.periodHeading}>AFTERNOON</Text>
+            <Text style={[styles.periodHeading, { fontSize: lang === 'ta' ? normalize(10) : normalize(12) }]}>
+              {t('afternoon')}
+            </Text>
             {renderTimeSlots('AFTERNOON')}
 
-            <Text style={styles.periodHeading}>EVENING</Text>
+            <Text style={[styles.periodHeading, { fontSize: lang === 'ta' ? normalize(10) : normalize(12) }]}>
+              {t('evening')}
+            </Text>
             {renderTimeSlots('EVENING')}
             
-            <View style={{height: 20}} />
+            <View style={{ height: normalize(20) }} />
           </ScrollView>
 
           <View style={styles.confirmBtnContainer}>
-             <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmSchedule}>
-               <Text style={styles.confirmBtnText}>Confirm</Text>
+             <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmSchedule} activeOpacity={0.8}>
+               <Text 
+                 style={[styles.confirmBtnText, { fontSize: lang === 'ta' ? normalize(14) : normalize(16) }]}
+               >
+                 {t('confirm')}
+               </Text>
              </TouchableOpacity>
           </View>
 
@@ -206,27 +253,121 @@ export default function ScheduleDeliveryModal({ visible, onClose, onSuccess }) {
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: '85%', paddingHorizontal: 16, paddingTop: 20 },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827' },
-  closeBtn: { backgroundColor: '#111827', width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  datesContainer: { marginBottom: 20 },
-  dateBox: { paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, marginRight: 10, alignItems: 'center', minWidth: 80 },
-  dateBoxSelected: { borderColor: '#058A46', backgroundColor: '#F0FDF4' },
-  dateLabel: { fontSize: 12, color: '#9CA3AF', marginBottom: 4 },
-  dateValue: { fontSize: 14, fontWeight: 'bold', color: '#111827' },
-  dateTextSelected: { color: '#058A46' },
-  timeSlotsScroll: { flex: 1 },
-  periodHeading: { fontSize: 12, fontWeight: 'bold', color: '#9CA3AF', marginTop: 10, marginBottom: 10, letterSpacing: 1 },
-  slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  slotBox: { width: '31%', paddingVertical: 12, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, alignItems: 'center', marginBottom: 4 },
-  slotBoxSelected: { borderColor: '#058A46', backgroundColor: '#F0FDF4' },
-  slotBoxDisabled: { backgroundColor: '#F3F4F6', borderColor: '#F3F4F6' },
-  slotText: { fontSize: 12, fontWeight: '600', color: '#4B5563' },
-  slotTextSelected: { color: '#058A46' },
-  slotTextDisabled: { color: '#D1D5DB' },
-  confirmBtnContainer: { paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingBottom: Platform.OS === 'ios' ? 32 : 16 },
-  confirmBtn: { backgroundColor: '#FF204E', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
-  confirmBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  modalOverlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.5)', 
+    justifyContent: 'flex-end' 
+  },
+  modalContent: { 
+    backgroundColor: '#FFF', 
+    borderTopLeftRadius: normalize(24), 
+    borderTopRightRadius: normalize(24), 
+    height: '85%', 
+    paddingHorizontal: normalize(16), 
+    paddingTop: normalize(20) 
+  },
+  modalHeader: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: normalize(20) 
+  },
+  modalTitle: { 
+    fontWeight: 'bold', 
+    color: '#111827' 
+  },
+  closeBtn: { 
+    backgroundColor: '#111827', 
+    width: normalize(28), 
+    height: normalize(28), 
+    borderRadius: normalize(14), 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  datesContainer: { 
+    marginBottom: normalize(20) 
+  },
+  dateBox: { 
+    paddingVertical: normalize(12), 
+    paddingHorizontal: normalize(16), 
+    borderWidth: 1, 
+    borderColor: '#E5E7EB', 
+    borderRadius: normalize(12), 
+    marginRight: normalize(10), 
+    alignItems: 'center', 
+    minWidth: normalize(80) 
+  },
+  dateBoxSelected: { 
+    borderColor: '#058A46', 
+    backgroundColor: '#F0FDF4' 
+  },
+  dateLabel: { 
+    color: '#9CA3AF', 
+    marginBottom: normalize(4) 
+  },
+  dateValue: { 
+    fontWeight: 'bold', 
+    color: '#111827' 
+  },
+  dateTextSelected: { 
+    color: '#058A46' 
+  },
+  timeSlotsScroll: { 
+    flex: 1 
+  },
+  periodHeading: { 
+    fontWeight: 'bold', 
+    color: '#9CA3AF', 
+    marginTop: normalize(10), 
+    marginBottom: normalize(10), 
+    letterSpacing: 1 
+  },
+  slotGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: normalize(10) 
+  },
+  slotBox: { 
+    width: '31%', 
+    paddingVertical: normalize(12), 
+    borderWidth: 1, 
+    borderColor: '#E5E7EB', 
+    borderRadius: normalize(8), 
+    alignItems: 'center', 
+    marginBottom: normalize(4) 
+  },
+  slotBoxSelected: { 
+    borderColor: '#058A46', 
+    backgroundColor: '#F0FDF4' 
+  },
+  slotBoxDisabled: { 
+    backgroundColor: '#F3F4F6', 
+    borderColor: '#F3F4F6' 
+  },
+  slotText: { 
+    fontWeight: '600', 
+    color: '#4B5563' 
+  },
+  slotTextSelected: { 
+    color: '#058A46' 
+  },
+  slotTextDisabled: { 
+    color: '#D1D5DB' 
+  },
+  confirmBtnContainer: { 
+    paddingVertical: normalize(16), 
+    borderTopWidth: 1, 
+    borderTopColor: '#F3F4F6', 
+    paddingBottom: Platform.OS === 'ios' ? normalize(32) : normalize(16) 
+  },
+  confirmBtn: { 
+    backgroundColor: '#FF204E', 
+    paddingVertical: normalize(14), 
+    borderRadius: normalize(8), 
+    alignItems: 'center' 
+  },
+  confirmBtnText: { 
+    color: '#FFF', 
+    fontWeight: 'bold' 
+  },
 });

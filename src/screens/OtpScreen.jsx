@@ -53,11 +53,9 @@ export default function OtpScreen({ route, navigation }) {
   };
 
   const handleVerify = async (enteredOtp) => {
-    // Dummy Validation: '1234' enter panna correct nu eduthukkom
     if (enteredOtp === "1234") {
-      setIsValidated(true); // 1. Border-ah Green aaka state true pandrom
+      setIsValidated(true);
 
-      // 2. Oru 1 second wait panni thaan Home-ku povom
       setTimeout(async () => {
         try {
           const currentDate = new Date();
@@ -65,18 +63,36 @@ export default function OtpScreen({ route, navigation }) {
 
           await AsyncStorage.setItem("userToken", "dummy_token_123");
           await AsyncStorage.setItem("loginExpiry", expiryDate.toString());
+          
+          // தற்போதைய யூசரின் போன் நம்பரை சேமிக்கிறோம்
+          await AsyncStorage.setItem("currentUserPhone", phoneNumber);
 
+          // ஏற்கனவே உள்ள Profile-ஐ எடுக்கிறோம்
+          const existingProfileStr = await AsyncStorage.getItem(`userProfile_${phoneNumber}`);
+
+          if (existingProfileStr) {
+            const existingProfile = JSON.parse(existingProfileStr);
+            
+            // Profile இருந்து, அதில் குறைந்தபட்சம் 1 Address ஆவது இருந்தால் Home-க்கு செல்லலாம்
+            if (existingProfile.addresses && existingProfile.addresses.length > 0) {
+              navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+              return;
+            }
+          }
+          
+          // புதிய யூசர் (அல்லது Address இல்லாதவர்) -> LocationScreen-க்கு அனுப்பவும்
           navigation.reset({
             index: 0,
-            routes: [{ name: "Home", params: { phoneNumber } }],
+            routes: [{ name: "Location", params: { phoneNumber } }],
           });
+
         } catch (e) {
           console.log("Storage Error: ", e);
         }
       }, 1000);
     } else {
       alert(t("invalid_otp_test"));
-      setOtp(["", "", "", ""]); // Thappana OTP na box clear pannidum
+      setOtp(["", "", "", ""]); 
       inputs.current[0].focus();
     }
   };

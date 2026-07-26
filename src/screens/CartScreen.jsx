@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: normalize(16),
-    paddingTop: Platform.OS === "ios" ? normalize(20) : normalize(40),
+    paddingTop: Platform.OS === "ios" ? normalize(20) : normalize(20),
     paddingBottom: normalize(16),
     backgroundColor: "#FFF",
     borderBottomWidth: 1,
